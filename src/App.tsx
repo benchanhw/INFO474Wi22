@@ -1,14 +1,21 @@
 import { useState } from 'react'
+//import Select from 'react-select'
 import logo from './logo.svg'
 import { AxisLeft, AxisBottom } from "@visx/axis";
 import './App.css'
-import { scaleLinear, scaleBand, extent, line, symbol, csv } from "d3";
+import { scaleLinear, scaleBand, extent, line, symbol, csv, interpolateOranges, select } from "d3";
 import { Label, Connector, CircleSubject, LineSubject, Annotation } from '@visx/annotation';
 import data from "./data";
 import data2 from "./data2";
 import data_tag from "./tagged_data";
 import hosp_util from "./hosp_util";
 import covid_util from "./covid_util";
+import state_average from "./state_average";
+import weekly_data from "./weekly_data";
+import select_data from "./select_data";
+import final_select from "./final_select";
+import selector_convert from "./selector_convert";
+
 import * as d3 from "d3";
 import { stringify } from 'querystring';
 //const data = require('data');
@@ -21,6 +28,11 @@ function App() {
   const dayNames = [ "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th",
   "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd",
   "24th", "25th", "26th", "27th", "28th", "29th", "30th", "31st"]
+
+  const orderedStates = ["RI", "MD", "MA", "SC", "DC", "GA", "NC", "PA", "CT", "NY", "AZ", "MI", "DE",
+  "FL", "TX", "CA", "OR", "WV", "AL", "MO", "WA", "NV", "NJ", "NH", "MN", "OH", "VA", "NM", "LA", "ME",
+  "ND", "AR", "TN", "IL", "CO", "HI", "KY", "NE", "VT", "OK", "WI", "MS", "MT", "IA", "IN", "AK", "VI",
+  "PR", "UT", "KS", "ID", "SD", "AS", "WY"]
 
   const months = [
     "Mar 2020",
@@ -176,7 +188,7 @@ function App() {
     }
     //console.log(row.inpatient_beds_utilization)
   })
-*/}
+
  
   
 
@@ -329,8 +341,114 @@ function App() {
 
   finalHeat.shift();
 
-  console.log(finalHeat)
+  //console.log(finalHeat)
+*/}
+
+
+  //final viz 
+  const finalHeight =  660 / 110
+  const finalWidth = 810 / 54
+
+
+  var lastViz = [[0]]
+
+  weekly_data.forEach((row) => {
+    let keyStore = [0]
+    keyStore[0] = row.weekly_utilization //proportion
+    keyStore[1] = 140 + (finalWidth * row.statecode) //state column
+    keyStore[2] = 50 + (finalHeight * row.row_code)//data row
+
+    lastViz.push(keyStore)
+  });
+
+  lastViz.shift();
+
+  
+  const policySelect = [
+    "Initial Vaccine", "Public Vaccine", "60+ Vaccine", "K12 Vaccine", "School Closure",
+    "Business Closure", "Emergency Declaration", "Emergency Stop"]
+
+  const policy1 = [
+    "Initial Vaccine", "Public Vaccine", "60+ Vaccine", "K12 Vaccine"
+  ]
+
+  const policy2 = [
+    "School Closure", "Business Closure", "Emergency Declaration", "Emergency Stop"
+  ]
+
+  const [policyChoice, setPolicy] = useState("Initial Vaccine")
+
+  var selectedPolicy = selector_convert.filter(record => record.input == String(policyChoice))
+
+  //console.log(selectedPolicy)
+
+  var selectCode = selectedPolicy[0].code_type
+  var heading = selectedPolicy[0].title
+  var content = selectedPolicy[0].text
+  var display = selectedPolicy[0].detail_text
+  //console.log(selectCode)
+
+  var isolatedState = [0]
+  var isolatedData = [0]
+  var stateNames = [""]
+
+  state_average.forEach((row,i) => {
+    stateNames[i] = row.State
+  })
+
+
+  final_select.forEach((row, i) => {
+    isolatedState[i] = row.statecode
+    isolatedData[i] = row[selectCode]
+  })
+
+  //console.log(isolatedState)
+
+  var selectPolicy = [[0]] //for policy selector
+
+  isolatedData.forEach((row, i) => {
+    let policyTemp = [0]
+    policyTemp[0] = 147.5 + (finalWidth * isolatedState[i])
+    policyTemp[1] = 53 + (finalHeight * row)
+
+    selectPolicy.push(policyTemp)
+  })
+
+  selectPolicy.shift();
+
+
+  let finalPlot = ""
+
+  isolatedData.forEach((point, i) => {
+    if (i == 0) {
+      finalPlot += "M " + (147.5 + (finalWidth * isolatedState[i])) + " " + (53 + (finalHeight * point)) + " "
+    } else {
+      finalPlot += "L " + (147.5 + (finalWidth * isolatedState[i])) + " " + (53 + (finalHeight * point)) + " "
+    }
+  })
+
+
+  const stateX = scaleBand()
+  .domain(stateNames)
+  .range([140,950])
+
+
+
+
+
+
+  //console.log(lastViz)
+
 {/*
+
+  select_data.forEach((row, i) => {
+    //console.log(i)
+    if (i == 0) {
+      finalPlot += "M " + (147.5 + (finalWidth * row.statecode)) + " " + (63 + (finalHeight * row.row_code)) + " "
+    } else {
+      finalPlot += "L " + (147.5 + (finalWidth * row.statecode)) + " " + (63 + (finalHeight * row.row_code)) + " "
+    }
+  })
 
 dataFill.forEach((row, i) => {
     let tempStore = []
@@ -421,7 +539,8 @@ dataFill.forEach((row, i) => {
         </svg> 
         
           
-      </div>
+      </div> 
+      <path fill="none" stroke="black" strokeWidth={1} d={plotLine}/>
 
 
 */}
@@ -434,7 +553,258 @@ dataFill.forEach((row, i) => {
 
   return (
     <div className="App">
+      <h2>Impact of COVID on Hospitalization</h2>
+
+      <p style={{ paddingLeft:'2.5rem', paddingRight:'2.5rem'}}>
+        Throughout the pandemic, one of the most significant messages was the idea of "flattening the curve";
+        it was hoped that the policies and actions taken would allow cases of COVID-19 to be spread out over
+        a longer time, thus allowing state hospitals to better cope with surges of patients. In order to explore
+        these policies in more detail and understand their effects, the visualization below will attempt to consolidate
+        a pandemic's worth of medical and state policy data into a single, simple visualization to illustrate the
+        varying medical situations for each state as impacted by the pandemic and its choice of when to institute 
+        major pandemic control policies. 
+      </p>
+
+      <svg width="1000" height="750" style={{border: "1px solid black"}}>
+          {lastViz.map((data) => {
+                return <rect
+                 x={data[1]}
+                 y={data[2]}
+                width= {finalWidth}
+                height= {finalHeight} 
+                fill={d3.interpolateRdYlBu(1-data[0])}></rect>
+
+            })}
+
+          {selectPolicy.map((data) => {
+                return <circle
+                 cx={data[0]}
+                 cy={data[1]}
+                r={2}
+                fill="rgba(0,0,0,0.9)"></circle>
+
+            })}
+
+          <Annotation
+          x={selectPolicy[0][0]}
+          y={selectPolicy[0][1]}
+          dx={-20} // x offset of label from subject
+          dy={-20} // y offset of label from subject
+          >
+          <Connector />
+          <Label title={heading} subtitle={content} />
+          </Annotation>
+          
+          <path fill="none" stroke="black" strokeWidth={0.4} style={{ stroke:"rgba(0,0,0,0.75)"}} d={finalPlot}/>
+
+          <AxisBottom strokeWidth={1}  top={716} left={14} scale={stateX} tickValues={states}/>
+
+          <line
+            x1={154}
+            y1={56}
+            x2={1000}
+            y2={56}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+        <text x="968" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          2020
+        </text>
+
+
+            <line
+            x1={154}
+            y1={56 + (finalHeight * 53)}
+            x2={1000}
+            y2={56 + (finalHeight * 53)}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="968" y="368" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          2021
+        </text>
+
+        <line
+            x1={154}
+            y1={56 + (finalHeight * 106)}
+            x2={1000}
+            y2={56 + (finalHeight * 106)}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="968" y="686" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          2022
+        </text>
+
+        <line
+            x1={154.5}
+            y1={20}
+            x2={154.5}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+        <line
+            x1={154.5 + (finalWidth * 9)}
+            y1={20}
+            x2={154.5 + (finalWidth * 9)}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="174" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+          CDC Northeast 
+        </text>
+
+        <line
+            x1={154.5 + (finalWidth * 21)}
+            y1={20}
+            x2={154.5 + (finalWidth * 21)}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="336" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+          CDC Midwest
+        </text>
+
+
+        <line
+            x1={154.5 + (finalWidth * 38)}
+            y1={20}
+            x2={154.5 + (finalWidth * 38)}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="560" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+          CDC South
+        </text>
+
+        <line
+            x1={154.5 + (finalWidth * 51)}
+            y1={20}
+            x2={154.5 + (finalWidth * 51)}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="790" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+          CDC West
+        </text>
+
+
+        <line
+            x1={154.5 + (finalWidth * 54)}
+            y1={20}
+            x2={154.5 + (finalWidth * 54)}
+            y2={716}
+            strokeWidth={0.5}
+            style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
+
+
+        <text x="926" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          Other
+        </text>
+
+
+
+
+
+      </svg>
+      <div style={{ paddingLeft:'2.5rem', paddingRight:'2.5rem'}}>
+        <h3>{heading}</h3>
+        <p>{display}</p>
+      </div>
+
+      <hr></hr>
+
+      <p>
+        All data marked at the bottom means the state has never instituted this policy. Data is arranged by CDC
+        operational regions of the US, and ordered within each region from highest to lowest average hospital
+        utilization in the state. 
+      </p>
+
+
+
+      <div style={{ paddingBottom:'10rem', backgroundColor:'azure'}} >
+      <hr></hr>
+        <div style={{ float:'left', width:'50%'}}>
+          <h3>Vaccine Policies</h3>
+          <p>
+            These selectors display the release dates for varying stages of vaccine deployment.
+            The choices represent the major stages of deployment of vaccines; the initial release,
+            availability to a wider range of elderly at 60+, availability to K12 school staff, and 
+            then the general public release. Select a button to find out more.
+          </p>
+        </div>
+
+        <div style={{ float:'right', width:'50%', paddingTop:'2.5rem'}}>
+          {policy1.map((policy, i) => {
+          return (
+            <button style={{ marginRight:25, marginBottom:10}}
+             onClick={() => setPolicy(policy)}>{policy}</button>
+          )
+        })}</div>
+      </div>
+      <hr style={{backgroundColor:'azure'}}></hr>
+
+      <div style={{ paddingBottom:'10rem', backgroundColor:'azure'}} >
+        <div style={{ float:'left', width:'50%'}}>
+          <h3>Closure Policies</h3>
+          <p>
+            These selectors display the release dates for varying stages of vaccine deployment.
+            The choices represent the major stages of deployment of vaccines; the initial release,
+            availability to a wider range of elderly at 60+, availability to K12 school staff, and 
+            then the general public release. Select a button to find out more.
+          </p>
+        </div>
+
+        <div style={{ float:'right', width:'50%', paddingTop:'2.5rem'}}>
+          {policy2.map((policy, i) => {
+          return (
+            <button style={{ marginRight:25, marginBottom:10}}
+             onClick={() => setPolicy(policy)}>{policy}</button>
+          )
+        })}</div>
+      </div>
+
+      <hr></hr>
+
+
+
+  
+
+
       
+      {/*
+
+      <div>
+        <div style={{ float:'left', width:'25%'}}>
+          {policy1.map((policy, i) => {
+          return (
+            <button style={{ marginRight:25, marginBottom:10}}
+             onClick={() => setPolicy(policy)}>{policy}</button>
+          )
+        })}</div>
+
+
+
+        <div style={{ float:'right', width:'25%'}}>
+        {policy2.map((policy, i) => {
+          return (
+            <button style={{ marginRight:25, marginBottom:10}}
+             onClick={() => setPolicy(policy)}>{policy}</button>
+          )
+        })}
+        </div>
+      </div>
 
       <h2>Assignment 3: Interactivity</h2>
 
@@ -512,7 +882,7 @@ dataFill.forEach((row, i) => {
       </div>
 
       <br></br>
-      {/*
+      
 
       <div>
         {months.map((month, i) => {
@@ -543,6 +913,8 @@ dataFill.forEach((row, i) => {
       </div>
 
       */}
+
+      {/*
 
 
 
@@ -763,7 +1135,7 @@ dataFill.forEach((row, i) => {
       </p>
 
 
-      {/*
+      
 
 
       <svg width={diagramWidth} height={diagramHeight} style={{border: "1px solid black"}}>

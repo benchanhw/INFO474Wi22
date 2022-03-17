@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  font-family: Helvetica, sans-serif
 }
 
 .App-logo {
@@ -38,5 +39,19 @@
 }
 
 button {
+  border: 0.25;
   font-size: calc(10px + 2vmin);
+  background-color:lightseagreen;
+  color:rgba(0,0,0,0.75);
+  border-radius: 5px;
+  
+}
+
+button:focus {
+  background-color: aqua;
+  color:rgba(0,0,0,0.75);
+}
+
+hr {
+  margin:0;
 }
