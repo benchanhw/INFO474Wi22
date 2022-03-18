@@ -434,6 +434,11 @@ function App() {
 
 
 
+  const rangeColor = ["10%", "30%", "50%", "70%", "90%"]
+
+  const rangeColorX = scaleBand()
+  .domain(rangeColor)
+  .range([0,150])
 
 
 
@@ -589,7 +594,7 @@ dataFill.forEach((row, i) => {
           x={selectPolicy[0][0]}
           y={selectPolicy[0][1]}
           dx={-20} // x offset of label from subject
-          dy={-20} // y offset of label from subject
+          dy={-5} // y offset of label from subject
           >
           <Connector />
           <Label title={heading} subtitle={content} />
@@ -598,6 +603,27 @@ dataFill.forEach((row, i) => {
           <path fill="none" stroke="black" strokeWidth={0.4} style={{ stroke:"rgba(0,0,0,0.75)"}} d={finalPlot}/>
 
           <AxisBottom strokeWidth={1}  top={716} left={14} scale={stateX} tickValues={states}/>
+
+
+          <text x="968" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          2020
+        </text>
+
+        <text x="20" y="35" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+          Hospital Utilization %
+        </text>
+
+        <AxisBottom strokeWidth={1} top={45} left={1.5} scale={rangeColorX} tickValues={rangeColor}/>
+
+        <rect x="2" y="45" width="30" height="10" fill={d3.interpolateRdYlBu(0.9)}></rect>
+        <rect x="32" y="45" width="30" height="10" fill={d3.interpolateRdYlBu(0.7)}></rect>
+        <rect x="62" y="45" width="30" height="10" fill={d3.interpolateRdYlBu(0.5)}></rect>
+        <rect x="92" y="45" width="30" height="10" fill={d3.interpolateRdYlBu(0.3)}></rect>
+        <rect x="122" y="45" width="30" height="10" fill={d3.interpolateRdYlBu(0.1)}></rect>
+
+
+        
+          
 
           <line
             x1={154}
@@ -640,7 +666,7 @@ dataFill.forEach((row, i) => {
 
         <line
             x1={154.5}
-            y1={20}
+            y1={35}
             x2={154.5}
             y2={716}
             strokeWidth={0.5}
@@ -648,73 +674,78 @@ dataFill.forEach((row, i) => {
 
         <line
             x1={154.5 + (finalWidth * 9)}
-            y1={20}
+            y1={35}
             x2={154.5 + (finalWidth * 9)}
             y2={716}
             strokeWidth={0.5}
             style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
 
 
-        <text x="174" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+        <text x="174" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
           CDC Northeast 
         </text>
 
         <line
             x1={154.5 + (finalWidth * 21)}
-            y1={20}
+            y1={35}
             x2={154.5 + (finalWidth * 21)}
             y2={716}
             strokeWidth={0.5}
             style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
 
 
-        <text x="336" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+        <text x="336" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
           CDC Midwest
         </text>
 
 
         <line
             x1={154.5 + (finalWidth * 38)}
-            y1={20}
+            y1={35}
             x2={154.5 + (finalWidth * 38)}
             y2={716}
             strokeWidth={0.5}
             style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
 
 
-        <text x="560" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+        <text x="560" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
           CDC South
         </text>
 
         <line
             x1={154.5 + (finalWidth * 51)}
-            y1={20}
+            y1={35}
             x2={154.5 + (finalWidth * 51)}
             y2={716}
             strokeWidth={0.5}
             style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
 
 
-        <text x="790" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
+        <text x="790" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={14}>
           CDC West
         </text>
 
 
         <line
             x1={154.5 + (finalWidth * 54)}
-            y1={20}
+            y1={35}
             x2={154.5 + (finalWidth * 54)}
             y2={716}
             strokeWidth={0.5}
             style={{ fill:"none", stroke:"rgba(0,0,0,0.75)"}}></line>
 
 
-        <text x="926" y="40" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
+        <text x="926" y="50" style={{ fill:"rgba(0,0,0,0.75)"}}  fontSize={12}>
           Other
         </text>
 
-
-
+        <text x="420" y="22" style={{ fill:"rgba(0,0,0,0.5)", fontWeight:'800'}}  fontSize={14}>
+          CDC Regions and US States
+        </text>
+        
+        <text x="70" y="-977" transform="rotate(-270)" fontSize={14} style={{ fill:"rgba(0,0,0,0.5)", fontWeight:'800'}}>
+            Year of Pandemic
+          </text>
 
 
       </svg>

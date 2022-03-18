@@ -37,8 +37,8 @@ export default [
   {
     "input": "Business Closure",
     "code_type": "shut_business_code",
-    "title": "Business Closure",
-    "text": "Initial Order to Close Non-Essential Business",
+    "title": "Business Close",
+    "text": "Order to Close Non-Essential Business",
     "detail_text": "This data shows when states first ordered all non-essential businesses like cinemas, salons and shops to close for in person business. Only South Dakota has never insituted any business closure policy."
   },
   {
